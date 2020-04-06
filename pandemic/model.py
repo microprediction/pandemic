@@ -41,9 +41,7 @@ def run( params, plt=None ):
             status     = individual_progression(status, health_params=params['health'], day_fraction=day_fraction)
 
 
-
-
-def run_with_scatter():
+def run():
     import matplotlib.pyplot as plt
     params = EXAMPLE_PARAMETERS
     run(params=params, plt=plt)
@@ -53,6 +51,6 @@ def run_without_scatter():
     run(params=params, plt=None)
 
 if __name__=="__main__":
-    run_with_scatter()
+    run()
 
 

@@ -1,1 +1,2 @@
-# nothing
+
+from pandemic.model import run
