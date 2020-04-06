@@ -10,7 +10,7 @@ from pprint import  pprint
 import numpy as np
 import time
 
-def run( params, plt=None ):
+def simulation( params, plt=None ):
 
     # Initialize a city's geography and its denizens
     num, num_initially_infected = params['geometry']['n'],params['geometry']['i']
@@ -44,11 +44,11 @@ def run( params, plt=None ):
 def run():
     import matplotlib.pyplot as plt
     params = EXAMPLE_PARAMETERS
-    run(params=params, plt=plt)
+    simulation(params=params, plt=plt)
 
 def run_without_scatter():
     params = EXAMPLE_PARAMETERS
-    run(params=params, plt=None)
+    simulation(params=params, plt=None)
 
 if __name__=="__main__":
     run()
