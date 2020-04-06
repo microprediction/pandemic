@@ -20,14 +20,14 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
     ],
-    packages=["pandemic","pandemic.ornstein"],
+    packages=["pandemic","pandemic.model"],
     test_suite='pytest',
     tests_require=['pytest'],
     include_package_data=True,
     install_requires=["numpy","pathlib","contexttimer","requests"],
     entry_points={
         "console_scripts": [
-            "microprediction=microprediction.__main__:main",
+            "pandemic=pandemic.__main__:main",
         ]
      },
      )
