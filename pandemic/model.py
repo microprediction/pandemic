@@ -26,19 +26,21 @@ def simulation( params, plt=None ):
     while any( s in [ INFECTED, POSITIVE, SYMPTOMATIC ] for s in status ):
         day = day+1
         for time_of_day in times_of_day(num_times_of_day):
-            if plt:
-                plt.clf()
-                plot_points(plt=plt, positions=positions, status=status, title="Day "+str(day)+':'+str(time_of_day*num_times_of_day))
-                plt.axis([-10,10,-10,10])
-                plt.show(block=False)
-                plt.pause(0.01)
-            pprint(Counter([list(STATE_DESCRIPTIONS.values())[s] for s in status]))
+            attractors = destinations(status, time_of_day, home, work)
+            positions = evolve_positions(positions=positions, motion_params=params['motion'], attractors=attractors,
+                                         day_fraction=day_fraction)
+            exposed = newly_exposed(positions=positions, status=status, precision=precision)
+            status = contact_progression(status=status, health_params=params['health'], exposed=exposed)
+            status = individual_progression(status, health_params=params['health'], day_fraction=day_fraction)
 
-            attractors = destinations( status, time_of_day, home, work )
-            positions  = evolve_positions(positions=positions, motion_params=params['motion'], attractors=attractors, day_fraction=day_fraction )
-            exposed    = newly_exposed(positions=positions, status=status, precision=precision )
-            status     = contact_progression(status=status, health_params=params['health'], exposed=exposed)
-            status     = individual_progression(status, health_params=params['health'], day_fraction=day_fraction)
+        if plt:
+            plt.clf()
+            plot_points(plt=plt, positions=positions, status=status, title="Day "+str(day)+':'+str(time_of_day*num_times_of_day))
+            plt.axis([-10,10,-10,10])
+            plt.show(block=False)
+            plt.pause(0.01)
+        pprint(Counter([list(STATE_DESCRIPTIONS.values())[s] for s in status]))
+
 
 
 def run():
