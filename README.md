@@ -6,5 +6,6 @@ A generative model
     >> from pandemic import run
     >> run()
     
+[Imgur](https://i.imgur.com/ToFMgAl.png)
     
 ![](https://imgur.com/ToFMgAl)
