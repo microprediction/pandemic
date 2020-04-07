@@ -20,7 +20,7 @@ def sprawl( geometry_params, num ):
         :return: (float,float)
         """
         return bound( ( r*np.random.randn()+(1+s)*p[0]+e*p[0]*abs(p[0]) ,
-                       r*np.random.randn()+(1+s)*p[1]+e*p[1]*abs(p[1])
+                        r*np.random.randn()+(1+s)*p[1]+e*p[1]*abs(p[1])
                ))
 
     points = [ (0,0) ]
@@ -29,10 +29,25 @@ def sprawl( geometry_params, num ):
         points.append(_neighbour(r=r,s=s,e=e, p=p) )
     return points
 
-def home_and_work_locations( geometry_params, num ):
-    d    = geometry_params['d']
-    work = [ (pos[0]/2,pos[1]/2) for pos in sprawl( geometry_params=geometry_params, num=num ) ]
-    home = sprawl( geometry_params=geometry_params, num=num )
+
+
+def home_and_work_locations( geometry_params, num, centers=None ):
+
+    if centers is None:
+        centers = [ (1.1,7.5),(6,0),(0,7),(0,-5)]
+
+    work_sprawls = list()
+    for center in centers:
+        work_sprawls.append( [ (pos[0]+center[0], pos[1]+center[1]) for pos in sprawl( geometry_params=geometry_params, num=num) ] )
+    work = [ random.choice(ws) for ws in zip( *work_sprawls ) ]
+
+    geometry_params['r'] = 4 * geometry_params['r']
+    home_sprawls = list()
+    for center in centers:
+        home_sprawls.append( [(pos[0] + center[0], pos[1] + center[1]) for pos in sprawl(geometry_params=geometry_params, num=num)])
+    home = [random.choice(hs) for hs in zip(*home_sprawls)]
+
+    work = [ random.choice([w,h]) for w,h in zip(work,home) ]   # Half stay home
     return home, work
 
 if __name__=="__main__":

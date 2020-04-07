@@ -3,7 +3,7 @@ from pandemic.city import home_and_work_locations
 from pandemic.conventions import EXAMPLE_PARAMETERS, INFECTED, VULNERABLE, POSITIVE, STATE_DESCRIPTIONS, SYMPTOMATIC
 from pandemic.compliance import destinations
 from pandemic.movement import evolve_positions, newly_exposed
-from pandemic.illness import contact_progression, individual_progression
+from pandemic.health import contact_progression, individual_progression
 from pandemic.plotting import plot_points
 from collections import Counter
 from pprint import  pprint
@@ -17,7 +17,7 @@ def simulation( params, plt=None ):
     num_times_of_day = params['motion']['t']
     precision  = params['geometry']['p']
     home, work = home_and_work_locations(geometry_params=params['geometry'],num=num)
-    positions  = nudge(work,w=0.005*params['motion']['w'])
+    positions  = nudge(home,w=0.015*params['motion']['w'])
     status     = np.random.permutation([INFECTED]*num_initially_infected +[VULNERABLE]*(num-num_initially_infected))
     day_fraction = 1.0/num_times_of_day
 
@@ -31,7 +31,7 @@ def simulation( params, plt=None ):
                 plot_points(plt=plt, positions=positions, status=status, title="Day "+str(day)+':'+str(time_of_day*num_times_of_day))
                 plt.axis([-10,10,-10,10])
                 plt.show(block=False)
-                plt.pause(0.1)
+                plt.pause(0.01)
             pprint(Counter([list(STATE_DESCRIPTIONS.values())[s] for s in status]))
 
             attractors = destinations( status, time_of_day, home, work )
