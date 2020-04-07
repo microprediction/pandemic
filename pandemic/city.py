@@ -30,11 +30,10 @@ def sprawl( geometry_params, num ):
     return points
 
 
-
 def home_and_work_locations( geometry_params, num, centers=None ):
 
     if centers is None:
-        centers = [ (1.1,7.5),(6,0),(0,7),(0,-5)]
+        centers = [ (0,10*np.random.rand()),(10*np.random.rand(),0),(-10*np.random.rand(),0),(0,-10*np.random.rand())]
 
     work_sprawls = list()
     for center in centers:

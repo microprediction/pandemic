@@ -10,7 +10,7 @@ from pprint import  pprint
 import numpy as np
 import time
 
-def simulation( params, plt=None ):
+def simulation( params, plt=None, plot_hourly=False ):
 
     # Initialize a city's geography and its denizens
     num, num_initially_infected = params['geometry']['n'],params['geometry']['i']
@@ -25,7 +25,7 @@ def simulation( params, plt=None ):
     day = 0
     while any( s in [ INFECTED, POSITIVE, SYMPTOMATIC ] for s in status ):
         day = day+1
-        for time_of_day in times_of_day(num_times_of_day):
+        for step_no, time_of_day in enumerate(times_of_day(num_times_of_day)):
             attractors = destinations(status, time_of_day, home, work)
             positions = evolve_positions(positions=positions, motion_params=params['motion'], attractors=attractors,
                                          day_fraction=day_fraction)
@@ -33,13 +33,13 @@ def simulation( params, plt=None ):
             status = contact_progression(status=status, health_params=params['health'], exposed=exposed)
             status = individual_progression(status, health_params=params['health'], day_fraction=day_fraction)
 
-        if plt:
-            plt.clf()
-            plot_points(plt=plt, positions=positions, status=status, title="Day "+str(day)+':'+str(time_of_day*num_times_of_day))
-            plt.axis([-10,10,-10,10])
-            plt.show(block=False)
-            plt.pause(0.01)
-        pprint(Counter([list(STATE_DESCRIPTIONS.values())[s] for s in status]))
+            if plt and ( plot_hourly or step_no % 12==0):
+                plt.clf()
+                plot_points(plt=plt, positions=positions, status=status, title="Day "+str(day)+':'+str(time_of_day*num_times_of_day))
+                plt.axis([-10,10,-10,10])
+                plt.show(block=False)
+                plt.pause(0.01)
+            pprint(Counter([list(STATE_DESCRIPTIONS.values())[s] for s in status]))
 
 
 
