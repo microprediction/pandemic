@@ -7,4 +7,4 @@ A generative model
     >> run()
     
     
-![](https://imgur.com/ToFMgAl)
+![](/images/pandemic.png)
