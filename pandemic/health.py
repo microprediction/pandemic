@@ -17,6 +17,7 @@ def individual_progression(status, health_params, day_fraction):
     """
         :param status         [ int ]     Vector of status
         :param health_params  dict of illness transition parameters
+        :param day_fraction   float       Between 0 and 1
     """
 
     def symptom_emergence(status, p_symptomatic):
@@ -47,5 +48,5 @@ def individual_progression(status, health_params, day_fraction):
     return status
 
 
-# Aside: useful for tests against matrix status updates
+# Aside: useful for tests against matrix status updates ...
 CANONICAL_ILLNESS_ORDERING   = flatten([[s1 + s2 for s1 in STATES if s1 + s2 in HEALTH_DESCRIPTIONS.keys()] for s2 in STATES])  # Canonical ordering of non-zero transition parameters

@@ -22,11 +22,11 @@ def evolve_positions( positions, motion_params, attractors, day_fraction ):
 
 def newly_exposed(positions, status, precision):
     """
-         :precision  int      Number of digits used in geohash
+         :precision  int      Geohash precision.
          :returns  [ bool ]
     """
     SICK = set([INFECTED,SYMPTOMATIC])  # Add POSITIVE here if you have less faith in humanity
-    infected_locations = [ encode(pos[0],pos[1],precision=precision) for pos,s in zip(positions,status) if s in SICK  ]
+    infected_locations = set( [ encode(pos[0],pos[1],precision=precision) for pos,s in zip(positions,status) if s in SICK  ] )
     return [ s==VULNERABLE and encode(pos[0],pos[1],precision=precision) in infected_locations for s,pos in zip(status,positions) ]
 
 

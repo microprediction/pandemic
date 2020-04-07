@@ -1,5 +1,6 @@
 from pandemic.conventions import GEOMETRY, NUM_GEOMETRY, HEALTH, MOTION, NUM_MOTION, NUM_STATES
 
+# Work in progress
 
 def params_to_vector(d:dict):
     g,m,c = d['geometry'], d['motion'], d['health']

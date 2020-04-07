@@ -8,9 +8,11 @@ from pandemic.plotting import plot_points
 from collections import Counter
 from pprint import  pprint
 import numpy as np
-import time
 
-def simulation( params, plt=None, plot_hourly=False ):
+def simulation( params, plt=None, plot_hourly=None ):
+
+    if plot_hourly is None:
+        plot_hourly = params['geometry']['n']<5000
 
     # Initialize a city's geography and its denizens
     num, num_initially_infected = params['geometry']['n'],params['geometry']['i']
