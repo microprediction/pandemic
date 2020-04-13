@@ -1,13 +1,11 @@
-from pandemic.conventions import HEALTH_DESCRIPTIONS, HEALTH, STATES, VULNERABLE, INFECTED, SYMPTOMATIC, RECOVERED, DEAD, POSITIVE
+from pandemic.conventions import HEALTH_DESCRIPTIONS, HEALTH, STATES, VULNERABLE, INFECTED, SYMPTOMATIC, RECOVERED, DECEASED, POSITIVE
 from pandemic.util import flatten
 import numpy as np
 
 
 def contact_progression(status, health_params, exposed):
-    """
-    :param status:
-    :param health_params:
-    :param exposed:         boolean
+    """ Sometimes exposure leads to infection
+    :param exposed:         [ boolean ]
     :return: new status
     """
     return [INFECTED if x and s == VULNERABLE and np.random.randn() < health_params['vi'] else s for s, x in zip(status, exposed)]
@@ -27,7 +25,7 @@ def individual_progression(status, health_params, day_fraction):
         return [RECOVERED if s == cohort and np.random.rand() < day_fraction*p_recovery else s for s in status]
 
     def death(status, cohort, p_death):
-        return [DEAD if s == cohort and np.random.rand() < day_fraction*p_death else s for s in status]
+        return [DECEASED if s == cohort and np.random.rand() < day_fraction * p_death else s for s in status]
 
     def random_testing(status, p_asymptomatic):
         return [POSITIVE if s==INFECTED and np.random.rand() < day_fraction*p_asymptomatic else s for s in status]
