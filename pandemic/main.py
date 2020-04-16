@@ -2,7 +2,7 @@ from pandemic.example_parameters import LARGE_TOWN
 from pandemic.simulation import simulate
 import matplotlib.pyplot as plt
 
-# TODO: Run from parameter file
+# See also /examples
 
 def large_town(with_plot=True):
     simulate(params=LARGE_TOWN, plt=plt if with_plot else None)

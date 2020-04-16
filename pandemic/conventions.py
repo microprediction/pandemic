@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from copy import  deepcopy
 
 #---------------------
 #    State space
@@ -55,13 +56,15 @@ HEALTH     = list(HEALTH_DESCRIPTIONS.keys())
 NUM_STATES, NUM_GEOMETRY, NUM_MOTION, NUM_HEALTH  = len(STATE_DESCRIPTIONS), len(GEOMETRY_DESCRIPTIONS), len(MOTION), len(HEALTH)
 
 
+
+
 #--------------------------------
 #   Map from parameters to R^n
 # -------------------------------
 
 # Canonical flattenning of parameters. Not required for simulation but may be useful for estimation, et cetera.
 
-def params_to_vector(d:dict):  # FIXME: Should adopt ordering from DESCRIPTIONS
+def params_to_vector(d:dict):  # FIXME: Broken ... should adopt ordering from DESCRIPTIONS
     g, m, c  = OrderedDict( zip(GEOMETRY,GEOMETRY) ), OrderedDict( zip(MOTION, MOTION)), OrderedDict( zip(HEALTH, HEALTH) )
     g.update(d['geometry'] )
     m.update(d['motion'])

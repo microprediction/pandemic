@@ -39,7 +39,7 @@ def homesick(params):
         for step_no, time_of_day in enumerate(times_of_day(num_times_of_day)):
             stationary = [ s in [DECEASED, POSITIVE] for s in status ]
             positions  = evolve_positions(positions=positions, motion_params=params['motion'], attractors=home,
-                                         day_fraction=day_fraction, stationary=stationary )
+                                          time_step=day_fraction, stationary=stationary)
 
             axs[0].clear()
             plot_points(plt=axs[0], positions=positions, status=status, sizes=[64]*6)

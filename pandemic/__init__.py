@@ -1,1 +1,1 @@
-from pandemic.main import large_town as run
+from pandemic.surrogate import surrogate as run

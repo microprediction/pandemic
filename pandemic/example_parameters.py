@@ -1,5 +1,7 @@
-
+import copy
 # Examples of system parameters. See /conventions.py for meaning
+from pandemic.conventions import DESCRIPTIONS
+
 
 
 SMALL_CITY = {
@@ -15,8 +17,7 @@ LARGE_TOWN = {
            'health':{'vi':1.0,'is':0.1,'ip':0.025,'sp':0.2,'ir':0.995/14,'id':0.005/14,'sr':0.97/14,'sd':0.03/14,'pd':0.02/14,'pr':0.96/14}
 }
 
-
-
+TOWN = copy.deepcopy( LARGE_TOWN )
 
 
 # Examples to help illustrate the model
@@ -40,6 +41,25 @@ WORKSICK = {
            'health':{'vi':1.0,'is':0.1,'ip':0.025,'sp':0.2,'ir':0.995/14,'id':0.005/14,'sr':0.97/14,'sd':0.03/14,'pd':0.02/14,'pr':0.96/14}
 }
 
+INCEPTION = {
+           'geometry':{'n':1000,'i':5,'r':1.0,'b':3,'h':2.5,'c':0.5,'s':0.25,'e':0.05,'p':6},
+           'motion':{'t':100,'k':6.0,'w':2},
+           'health':{'vi':1.0,'is':0.1,'ip':0.025,'sp':0.2,'ir':0.995/14,'id':0.005/14,'sr':0.97/14,'sd':0.03/14,'pd':0.02/14,'pr':0.96/14}
+}
+
+
+
 
 BASELINES = {'large_town':LARGE_TOWN,
+             'town':TOWN,
+             'small_city':SMALL_CITY,
              'toy_town':TOY_TOWN}
+
+def modifier( category, param, factor, baseline):
+    # Returns modified town params and description of how it was modified
+    params = copy.deepcopy(BASELINES[baseline])
+    cat_params = params[category]
+    cat_params[param] = cat_params[param]*factor
+    params[category] = cat_params
+    description = (DESCRIPTIONS[category][param] + ' multiplied by ' + str(factor))
+    return params, description

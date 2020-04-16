@@ -60,7 +60,7 @@ def commute(params):
             stationary = [ s in [DECEASED, POSITIVE] for s in status ]
             attractors = [ w for w in work ] if time_of_day<0.5 else [h for h in home]
             positions  = evolve_positions(positions=positions, motion_params=params['motion'], attractors=attractors,
-                                         day_fraction=day_fraction, stationary=stationary )
+                                          time_step=day_fraction, stationary=stationary)
 
             axs[0].clear()
             plot_points(plt=axs[0], positions=positions, status=status, sizes=[64]*6)

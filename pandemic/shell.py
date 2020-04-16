@@ -1,22 +1,14 @@
-# Entry point for command line
+# Entry point for command line. Supply baseline and parameter multipliers in triples
+# python3 shell.py large_town geometry n 0.5 health vi 0.5
 
-from pandemic.example_parameters import BASELINES, LARGE_TOWN
+from pandemic.example_parameters import BASELINES, modifier
 from pandemic.conventions import DESCRIPTIONS, CATEGORIES
 from pandemic.simulation import simulate
 import  matplotlib.pyplot as plt
 import sys
 
-def modifier( category, param, factor, baseline=None):
-    # Returns modified town and description of how it was modified
-    params = baseline or LARGE_TOWN
-    cat_params = params[category]
-    cat_params[param] = cat_params[param]*factor
-    params[category] = cat_params
-    description = (DESCRIPTIONS[category][param] + ' multiplied by ' + str(factor))
-    return params, description
-
 def modify_and_run(baseline, triples):
-    # python3 cmd.py geometry n 20000 health vi 0.5
+    # python3 shell.py large_town geometry n 20000 health vi 0.5
     params = BASELINES[baseline]
     descriptions = list()
     n = len(triples)
