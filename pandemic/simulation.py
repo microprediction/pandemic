@@ -4,13 +4,14 @@ from pandemic.conventions import INFECTED, VULNERABLE, POSITIVE, STATE_DESCRIPTI
 from pandemic.compliance import destinations
 from pandemic.movement import evolve_positions, newly_exposed
 from pandemic.health import contact_progression, individual_progression
-from pandemic.plotting import plot_points
+from pandemic.plotting import plot_points, plot_callback
 from collections import Counter
 from pprint import  pprint
 import numpy as np
 
 
-def simulate(params, plt=None, plot_hourly=None, xlabel=None, callback=None):
+
+def simulate(params, plt=None, plot_hourly=None, xlabel=None, callback=plot_callback ):
     """ OU Pandemic simulation
     :param params:       dict of dict as per pandemic.conventions
     :param plt:          Handle to matplotlib plot
@@ -45,16 +46,7 @@ def simulate(params, plt=None, plot_hourly=None, xlabel=None, callback=None):
             status = contact_progression(status=status, health_params=params['health'], exposed=exposed)
             status = individual_progression(status, health_params=params['health'], day_fraction=time_step )
 
-            if plt and ( plot_hourly or step_no % 12==0): # TODO: Move into a default callback
-                plt.clf()
-                plot_points(plt=plt, positions=positions, status=status, title="Day "+str(day)+':'+str(day_fraction*num_times_of_day))
-                b = params['geometry']['b']
-                plt.axis([-b,b,-b,b])
-                if xlabel:
-                    plt.xlabel(xlabel)
-                plt.show(block=False)
-                plt.pause(0.01)
             if callback:
-                callback(day=day, day_fraction=day_fraction , home=home, work=work, positions=positions, status=status, params=params)
+                callback(day=day, day_fraction=day_fraction , home=home, work=work, positions=positions, status=status, params=params, step_no=step_no, plot_hourly=plot_hourly, plt=plt)
     pprint(Counter([list(STATE_DESCRIPTIONS.values())[s] for s in status]))
 

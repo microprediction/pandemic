@@ -8,8 +8,10 @@ from pandemic.example_parameters import BASELINES
 from pandemic.conventions import params_to_vector, vector_to_params, CATEGORIES, STATE_DESCRIPTIONS
 from pandemic.zcurves import to_zcurve
 from pandemic.simulation import simulate
+from pandemic.plotting import plot_points
 import numpy as np
 from pprint import pprint
+import matplotlib.pyplot as plt
 
 #-------------------------
 #   Free parameters
@@ -84,8 +86,11 @@ class Surrogate():
         self.params   = params or random_modification( copy.deepcopy( BASELINES[baseline] ) )
         self.WIDTH    = 2+len(str(DAY_SCALE))+len(str(PARAMS_SCALE))
         self.plt      = plt
-        self.history  = list()
-        self.quietude = 10           # How often to pprint results
+        self.time_history = list()
+        self.key_history  = list()
+        self.metric_history = list()
+        self.quietude = 24
+        self.fig, self.axs = plt.subplots(nrows=2,ncols=2)
 
     def to_key(self, day, day_fraction ):
         return str(self.to_int(day=day, day_fraction=day_fraction, params=self.params)).zfill(self.WIDTH)
@@ -107,11 +112,14 @@ class Surrogate():
     def run(self):
         simulate(params=self.params,callback=self.callback,plot_hourly=False,plt=self.plt,xlabel="Sending results to www.swarmprediction.com. Thanks!")
 
-    def callback(self, day, day_fraction, status, positions, home, work, **ignore_other_kwargs):
+    def callback(self, day, day_fraction, status, positions, home, work, plt, **ignore_other_kwargs):
         metrics = self.callback_metric(status=status)
         ky      = self.to_key(day=day, day_fraction=day_fraction)
         res     = self.post(key=ky, metrics=metrics)
-        self.history.append(ky)
+        self.key_history.append(ky)
+        self.metric_history.append(metrics)
+        self.time_history.append(day+day_fraction)
+        self.plot(plt=plt,positions=positions,status=status)
         if random.choice(range(self.quietude))==0:
             pprint({"key":ky,"result":res,"metrics":metrics})
 
@@ -134,32 +142,30 @@ class Surrogate():
         res  = requests.get_nearby(url=self.baseurl+'/' + str(key), data={'precision':precision})
         return res.json() if res.status_code==200 else res.status_code
 
-    def get_timeseries(self):
-        """ Retrieve metrics from database """
-        num_times_of_day = self.params['motion']['t']
-        from pandemic.movement import times_of_day
-        finished = False
-        day = 0
-        history = list()
-        times   = list()
-        while not finished:
-            day = day + 1
-            for step_no, day_fraction in enumerate(times_of_day(num_times_of_day)):
-                key     = self.to_key(day=day, day_fraction=day_fraction)
-                metrics = self.get(key=key)
-                if metrics:
-                    times.append(day+day_fraction)
-                    history.append(metrics)
-                else:
-                    finished = True
-        return times, metrics
+    def plot(self,plt,positions,status):
 
-    def plot_metrics(self,plt):
-        times, metrics = self.get_timeseries()
-        plt.plot( zip(*metrics) )
-        plt.legend( list(STATE_DESCRIPTIONS.keys() ) )
+        self.axs[0][0].clear()
+        plot_points( plt=self.axs[0][0], positions=positions, status=status )
+        self.axs[0][0].figure
+
+        for k in range(2):
+            self.axs[1][k].clear()
+            self.plot_history( plt=self.axs[1][k],logarithmic=k )
+            self.axs[1][k].figure
+
         plt.show(block=False)
-        plt.pause(5)
+        plt.pause(0.01)
+
+    def plot_history(self,plt,logarithmic):
+        metrics = list(zip(*self.metric_history))[1:-1]
+        if len(metrics[0])>2:
+            for m in metrics:
+                plt.plot(self.time_history,m)
+            if logarithmic:
+                plt.set_yscale('log')
+            labels = list(STATE_DESCRIPTIONS.values())[1:-1]
+            plt.legend(labels)
+            plt.set_xlabel('Days since first '+str(self.params['geometry']['i'])+' infections.')
 
 def surrogate(plot=True):
     if plot:
@@ -173,7 +179,6 @@ def surrogate(plot=True):
         s = Surrogate(plt=plt)
         pprint(s.params)
         s.run()
-        s.plot_metrics()
 
 if __name__=="__main__":
     surrogate()

@@ -8,7 +8,6 @@ def test_embedding():
     v1 = int_to_cube(h, dim=len(v))
     assert( all( [ abs(v1_-v_)<1e-3 for v1_, v_ in zip(v,v1)]))
 
-
 def test_free_param_percentiles():
     params = copy.deepcopy( LARGE_TOWN )
     params['motion']['w']=6.13

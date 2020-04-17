@@ -2,6 +2,20 @@ from pandemic.conventions import STATE_DESCRIPTIONS
 from collections import Counter
 from pandemic.example_parameters import TOY_TOWN
 
+
+def plot_callback( positions, status, params, day, day_fraction, home, work, plt, xlabel, step_no, plot_hourly ):
+    if plt and (plot_hourly or step_no % 12 == 0):
+        plt.clf()
+        plot_points(plt=plt, positions=positions, status=status,
+                    title="Day " + str(day) + ':' + str(int(100*day_fraction)/100).zfill(4))
+        b = params['geometry']['b']
+        plt.axis([-b, b, -b, b])
+        if xlabel:
+            plt.xlabel(xlabel)
+        plt.show(block=False)
+        plt.pause(0.01)
+
+
 def plot_points(plt, positions, status, title=None, sizes=None):
     x = [p[0] for p in positions]
     y = [p[1] for p in positions]
