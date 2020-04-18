@@ -125,7 +125,8 @@ class Surrogate():
             if random.choice(range(self.quietude)) == 0:
                 if self.plt is not None:
                     self.plot(plt=plt,positions=positions,status=status)
-                    pprint({"key":ky,"day":str(day+day_fraction),"result":res,"retrieve":self.baseurl.replace('metrics',self.baseline)+'/'+ky})
+                pprint({"key":ky,"day":str(day+day_fraction),"result":res,"retrieve":self.baseurl.replace('metrics',self.baseline)+'/'+ky})
+                print(' ',flush=True)
 
     def post(self, key, metrics):
         """ The server stores results in a REDIS sorted set, where the score is an embedding of the parameters
@@ -186,7 +187,8 @@ class Surrogate():
             plt.legend(labels)
             plt.set_xlabel('Days since first '+str(self.params['geometry']['i'])+' infections.')
 
-def surrogate(baseline='city',plot=True,quietude=24):
+def surrogate(baseline='city',plot=True,quietude=5):
+    print('Starting pandemic simulation',flush=True)
     if plot:
         try:
             import matplotlib.pyplot as plt
@@ -197,6 +199,7 @@ def surrogate(baseline='city',plot=True,quietude=24):
         plt=None
 
     s = Surrogate(plt=plt,baseline=baseline,quietude=quietude)
+    pprint(s.params)
     s.run()
     if s.plt is not None:
         s.plt.close()
