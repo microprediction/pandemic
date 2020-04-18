@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pandemic.zcurves import from_zcurve
 
-#----------------------------------------------------------
-
+#----------------------------------------------------
+#    Demonstrates the Morton space filling curve
+#----------------------------------------------------
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
