@@ -122,10 +122,10 @@ class Surrogate():
             self.key_history.append(ky)
             self.metric_history.append(metrics)
             self.time_history.append(day+day_fraction)
-            if self.plt is not None:
-                self.plot(plt=plt,positions=positions,status=status)
-            if random.choice(range(self.quietude))==0:
-                pprint({"key":ky,"result":res,"metrics":metrics})
+            if random.choice(range(self.quietude)) == 0:
+                if self.plt is not None:
+                    self.plot(plt=plt,positions=positions,status=status)
+                    pprint({"key":ky,"result":res,"metrics":metrics})
 
     def post(self, key, metrics):
         """ The server stores results in a REDIS sorted set, where the score is an embedding of the parameters
@@ -186,7 +186,7 @@ class Surrogate():
             plt.legend(labels)
             plt.set_xlabel('Days since first '+str(self.params['geometry']['i'])+' infections.')
 
-def surrogate(baseline='town',plot=True):
+def surrogate(baseline='city',plot=True):
     if plot:
         try:
             import matplotlib.pyplot as plt
