@@ -186,7 +186,7 @@ class Surrogate():
             plt.legend(labels)
             plt.set_xlabel('Days since first '+str(self.params['geometry']['i'])+' infections.')
 
-def surrogate(baseline,plot=True):
+def surrogate(baseline='town',plot=True):
     if plot:
         try:
             import matplotlib.pyplot as plt
