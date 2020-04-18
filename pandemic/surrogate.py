@@ -79,18 +79,19 @@ def random_modification(params):
 
 class Surrogate():
 
-    def __init__(self, baseline='town', url='https://www.swarmprediction.com/', callback_metric=health_metric, plt=None, params=None):
-        self.baseurl  = url+baseline
+    def __init__(self, baseline, url='https://www.swarmprediction.com/metrics', callback_metric=health_metric, plt=None, params=None):
+        self.baseurl  = url
         self.baseline = baseline
         self.callback_metric = callback_metric
         self.params   = params or random_modification( copy.deepcopy( BASELINES[baseline] ) )
         self.WIDTH    = 2+len(str(DAY_SCALE))+len(str(PARAMS_SCALE))
-        self.plt      = plt
         self.time_history = list()
         self.key_history  = list()
         self.metric_history = list()
         self.quietude = 24
-        self.fig, self.axs = plt.subplots(nrows=2,ncols=2)
+        self.plt = plt
+        if plt is not None:
+            self.fig, self.axs = plt.subplots(nrows=2,ncols=2)
 
     def to_key(self, day, day_fraction ):
         return str(self.to_int(day=day, day_fraction=day_fraction, params=self.params)).zfill(self.WIDTH)
@@ -113,15 +114,18 @@ class Surrogate():
         simulate(params=self.params,callback=self.callback,plot_hourly=False,plt=self.plt,xlabel="Sending results to www.swarmprediction.com. Thanks!")
 
     def callback(self, day, day_fraction, status, positions, home, work, plt, **ignore_other_kwargs):
-        metrics = self.callback_metric(status=status)
-        ky      = self.to_key(day=day, day_fraction=day_fraction)
-        res     = self.post(key=ky, metrics=metrics)
-        self.key_history.append(ky)
-        self.metric_history.append(metrics)
-        self.time_history.append(day+day_fraction)
-        self.plot(plt=plt,positions=positions,status=status)
-        if random.choice(range(self.quietude))==0:
-            pprint({"key":ky,"result":res,"metrics":metrics})
+        """ This gets called after each computation cycle (see pandemic/simulation.py) """
+        if day_fraction==0:
+            metrics = self.callback_metric(status=status)
+            ky      = self.to_key(day=day, day_fraction=day_fraction)
+            res     = self.post(key=ky, metrics=metrics)
+            self.key_history.append(ky)
+            self.metric_history.append(metrics)
+            self.time_history.append(day+day_fraction)
+            if self.plt is not None:
+                self.plot(plt=plt,positions=positions,status=status)
+            if random.choice(range(self.quietude))==0:
+                pprint({"key":ky,"result":res,"metrics":metrics})
 
     def post(self, key, metrics):
         """ The server stores results in a REDIS sorted set, where the score is an embedding of the parameters
@@ -129,56 +133,76 @@ class Surrogate():
             they are close on the space filling curve ... which is often though not always the case. We *may* introduce
             redundancy into the embeddings to improve this somewhat.
         """
-        res = requests.post(self.baseurl +'/' + key, data={'metrics':json.dumps(metrics)})
+        res = requests.post(self.baseurl +'/' + key, data={'baseline':self.baseline,'metrics':json.dumps(metrics)})
         return res.status_code if res.status_code not in [200,201] else res.json()
 
     def get(self,key):
-        res = requests.get(url=self.baseurl + '/' + str(key) )
+        res = requests.get(url=self.baseurl + '/' + str(key), params={'baseline':self.baseline} )
         return res.status_code if res.status_code not in [200,201] else res.json()
 
     def get_nearby(self, day, day_fraction, params, precision=6):
         """ Retrieves scenarios which used similar parameters and the same exact time step """
         key  = self.to_key(day=day, day_fraction=day_fraction, params=params)
-        res  = requests.get_nearby(url=self.baseurl+'/' + str(key), data={'precision':precision})
+        res  = requests.patch(url=self.baseurl+'/' + str(key), data={'precision':precision,'baseline':self.baseline})
         return res.json() if res.status_code==200 else res.status_code
 
     def plot(self,plt,positions,status):
 
+        # Population plot
         self.axs[0][0].clear()
         plot_points( plt=self.axs[0][0], positions=positions, status=status )
         self.axs[0][0].figure
 
+        # Metrics plots, regular and logarithmic
         for k in range(2):
             self.axs[1][k].clear()
-            self.plot_history( plt=self.axs[1][k],logarithmic=k )
+            self.plot_metrics(plt=self.axs[1][k], logarithmic=k)
             self.axs[1][k].figure
+
+        # Rates of change
+        self.axs[0][1].clear()
+        self.plot_metrics(plt=self.axs[0][1], logarithmic=False, differences=True)
+        self.axs[0][1].figure
+
 
         plt.show(block=False)
         plt.pause(0.01)
 
-    def plot_history(self,plt,logarithmic):
-        metrics = list(zip(*self.metric_history))[1:-1]
-        if len(metrics[0])>2:
+    def plot_metrics(self, plt, logarithmic, differences=False):
+        metrics = list(zip(*self.metric_history))[1:]
+        if len(metrics[0])>3:
             for m in metrics:
-                plt.plot(self.time_history,m)
+                if differences:
+                    plt.plot(self.time_history[1:], list(np.diff(m)))
+                    plt.set_ylabel('Daily change')
+                else:
+                    plt.plot(self.time_history,m)
+                    plt.set_ylabel('Cumulative')
             if logarithmic:
                 plt.set_yscale('log')
-            labels = list(STATE_DESCRIPTIONS.values())[1:-1]
+            labels = list(STATE_DESCRIPTIONS.values())[1:]
+            if differences:
+                labels = [ 'net newly '+lb for lb in labels ]
             plt.legend(labels)
             plt.set_xlabel('Days since first '+str(self.params['geometry']['i'])+' infections.')
 
-def surrogate(plot=True):
+def surrogate(baseline,plot=True):
     if plot:
         try:
             import matplotlib.pyplot as plt
         except:
             plt = None
+            print("Plotting does not seem to be working, but calculations will proceed")
     else:
         plt=None
+
+    s = Surrogate(plt=plt,baseline=baseline)
+    s.run()
+    s.plt.close()
     while True:
-        s = Surrogate(plt=plt)
+        s = Surrogate(plt=None,baseline=baseline)
         pprint(s.params)
         s.run()
 
 if __name__=="__main__":
-    surrogate()
+    surrogate(baseline='city')

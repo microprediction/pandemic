@@ -1,0 +1,1 @@
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/microprediction/pandemic/master/scripts/run_many_no_plots.sh)"
