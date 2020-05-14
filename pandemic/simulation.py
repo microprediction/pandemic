@@ -11,31 +11,37 @@ import numpy as np
 
 
 
-def simulate(params, plt=None, plot_hourly=None, xlabel=None, callback=plot_callback ):
+def simulate(params, plt=None, hourly=None, xlabel=None, callback=plot_callback, home=None, work=None, positions=None, stopping_i=None, stopping_t=None):
     """ OU Pandemic simulation
     :param params:       dict of dict as per pandemic.conventions
     :param plt:          Handle to matplotlib plot
-    :param plot_hourly:  Bool        Set False to speed up, True to see commuting
+    :param hourly:  Bool        Set False to speed up, True to see commuting
     :param xlabel:       str         Label for plot
     :param callback:     Any function taking home, work, day, params, positions, status (e.g. for plotting, saving etc)
     :return: None        Use the callback
     """
-
-    if plot_hourly is None:
-        plot_hourly = params['geometry']['n']<50000  # Hack, remove
+    if stopping_i is None:
+        import math
+        stopping_i = int(math.ceil(0.7 * params['geometry']['i']))
+    if hourly is None:
+        hourly = params['geometry']['n'] < 50000  # Hack, remove
+    if stopping_t is None:
+        stopping_t = 150
 
     # Initialize a city's geography and its denizens
     num, num_initially_infected = int(params['geometry']['n']),int(params['geometry']['i'])
     num_times_of_day = int(params['motion']['t'])
     precision  = int(params['geometry']['p'])
-    home, work = home_and_work_locations(geometry_params=params['geometry'],num=num)
-    positions  = nudge(home,w=0.05*params['motion']['w'])
+    if home is None or work is None:
+        home, work = home_and_work_locations(geometry_params=params['geometry'],num=num)
+    if positions is None:
+        positions  = nudge(home,w=0.05*params['motion']['w'])
     status     = np.random.permutation([INFECTED]*num_initially_infected +[VULNERABLE]*(num-num_initially_infected))
     time_step  = 1.0/num_times_of_day
 
-    # Population drifts to work and back, incurring viral load based on proximity to others who are infected
     day = 0
-    while any( s in [ INFECTED ] for s in status ):
+    killed = False
+    while sum( s in [ INFECTED ] for s in status )>=stopping_i and day<stopping_t and not killed:
         day = day+1
         for step_no, day_fraction in enumerate(times_of_day(num_times_of_day)):
             stationary = [ s in [DECEASED, POSITIVE] for s in status ]
@@ -47,6 +53,13 @@ def simulate(params, plt=None, plot_hourly=None, xlabel=None, callback=plot_call
             status = individual_progression(status, health_params=params['health'], day_fraction=time_step )
 
             if callback:
-                callback(day=day, day_fraction=day_fraction , home=home, work=work, positions=positions, status=status, params=params, step_no=step_no, plot_hourly=plot_hourly, plt=plt)
+                signal = callback(day=day, day_fraction=day_fraction, home=home, work=work, positions=positions, status=status, params=params, step_no=step_no, hourly=hourly, plt=plt, xlabel=xlabel)
+                if signal is not None:
+                    if 'kill' in signal:
+                        killed = True
+                    if 'lockdown' in signal:
+                        work = [ h for h in home ]
+                    if 'params' in signal:
+                        params.update(signal['params'])
     pprint(Counter([list(STATE_DESCRIPTIONS.values())[s] for s in status]))
 

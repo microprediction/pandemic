@@ -20,6 +20,8 @@ HOME, WORK = 0, 1
 #    Parameter space
 # --------------------
 
+
+
 MOTION_DESCRIPTIONS    = OrderedDict({'t':'Number of time steps in a day',
                                       'k':'Fractional distance moved towards attractor per day (kappa)',
                                       'w':'Standard deviation per day (brownian motion term)'
@@ -32,7 +34,8 @@ GEOMETRY_DESCRIPTIONS  = OrderedDict({'n':'Population count',
                                       'h':'Size of household',
                                       'c':'Commuting fraction',
                                       's':'Spawl',
-                                      'e':'Sprawl quadratic term'} )
+                                      'e':'Sprawl quadratic term',
+                                      'p':'Precision of geoahashing'} )
 
 HEALTH_DESCRIPTIONS    = OrderedDict({ 'vi':'Infection probability if exposed',
                                        'is':'Symptom rate if infected',
@@ -53,8 +56,34 @@ GEOMETRY   = list(GEOMETRY_DESCRIPTIONS.keys())
 MOTION     = list(MOTION_DESCRIPTIONS.keys())
 HEALTH     = list(HEALTH_DESCRIPTIONS.keys())
 
+
+def parameter_category(name):
+    for c in CATEGORIES:
+        if name in DESCRIPTIONS[c].keys():
+            return c
+
 NUM_STATES, NUM_GEOMETRY, NUM_MOTION, NUM_HEALTH  = len(STATE_DESCRIPTIONS), len(GEOMETRY_DESCRIPTIONS), len(MOTION), len(HEALTH)
 
+
+
+#--------------------------------
+#   Flat dict
+# -------------------------------
+
+
+def flatten(params):
+    flat_params = OrderedDict()
+    for parent in DESCRIPTIONS.keys():
+        for c in params[parent].keys():
+            flat_params[parent+'_'+c] = params[parent][c]
+    return dict(flat_params)
+
+def unflatten(flat_params):
+    params = dict( [ (k,dict()) for k in DESCRIPTIONS.keys() ] )
+    for ky,val in flat_params.items():
+        parent, c = ky.split('_')[0],ky.split('_')[1]
+        params[parent][c] = val
+    return dict(params)
 
 
 

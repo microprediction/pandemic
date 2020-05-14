@@ -24,7 +24,7 @@ setup(
     test_suite='pytest',
     tests_require=['pytest','deepdiff'],
     include_package_data=True,
-    install_requires=["numpy","pathlib","matplotlib","contexttimer","requests","python-geohash","deepdiff","pymorton","pytest","redis","scipy"],
+    install_requires=["numpy","pathlib","matplotlib","contexttimer","requests","python-geohash","deepdiff","pymorton","pytest","redis","scipy","pandas"],
     entry_points={
         "console_scripts": [
             "pandemic=pandemic.__main__:main",

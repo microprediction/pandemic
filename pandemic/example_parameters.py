@@ -21,6 +21,43 @@ LARGE_TOWN = {
 
 TOWN = copy.deepcopy( LARGE_TOWN )
 
+CIR = {
+           'geometry':{'n':40000,'i':50,'r':0.04,'b':25,'h':2.5,'c':0.5,'s':0.25,'e':0.05,'p':6},
+           'motion':{'t':24,'k':3.0,'w':1.0},
+           'health':copy.deepcopy(STANDARD_HEALTH_PARAMS)
+}
+CIR['health']['vi']=0.1
+
+# Without mixing
+SPHERE_1 = copy.deepcopy(CIR)
+SPHERE_1['motion']['k']  = 0.00325 * SPHERE_1['motion']['k']
+SPHERE_1['health']['vi'] = 0.25    * SPHERE_1['health']['vi']  # Infection probability upon collision
+
+# Close to R=1 for mixing but grows ever so slowly
+SPHERE_2 = copy.deepcopy(CIR)
+SPHERE_2['motion']['k']  = 0.00325 * SPHERE_2['motion']['k']
+SPHERE_2['health']['vi'] = 0.75*SPHERE_2['health']['vi']  # Infection probability upon collision
+
+# Mixing
+SPHERE_3 = copy.deepcopy(CIR)
+SPHERE_3['motion']['w']  = 0.70 * SPHERE_3['motion']['w']
+SPHERE_3['motion']['k']  = 0.00325 * SPHERE_3['motion']['k']
+SPHERE_3['health']['vi'] = 1.0*SPHERE_3['health']['vi']  # Infection probability upon collision
+
+
+SPHERE_3 = copy.deepcopy(CIR)
+SPHERE_3['motion']['w']  = 0.25*0.70 * SPHERE_3['motion']['w']
+SPHERE_3['geometry']['n'] = 5000
+SPHERE_3['motion']['k']  = 0.00325 * SPHERE_3['motion']['k']
+SPHERE_3['health']['vi'] = 1.0*SPHERE_3['health']['vi']  # Infection probability upon collision
+
+# Density study
+DISK = {
+           'geometry':{'n':4500,'i':50,'r':0.05,'b':25,'h':2.5,'c':0.5,'s':0.25,'e':0.05,'p':6},
+           'motion':{'t':24,'k':3.0,'w':0.3},
+           'health':copy.deepcopy(STANDARD_HEALTH_PARAMS)
+}
+DISK['health']['vi']=0.5
 
 # Examples to help illustrate the model
 
@@ -29,6 +66,7 @@ TOY_TOWN = {
            'motion':{'t':240,'k':3.0,'w':3.0},
            'health':{'vi':1.0,'is':0.1,'ip':0.025,'sp':0.2,'ir':0.995/14,'id':0.005/14,'sr':0.97/14,'sd':0.03/14,'pd':0.02/14,'pr':0.96/14}
 }
+
 
 
 HOMESICK = {

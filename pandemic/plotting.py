@@ -3,8 +3,10 @@ from collections import Counter
 from pandemic.example_parameters import TOY_TOWN
 
 
-def plot_callback( positions, status, params, day, day_fraction, home, work, plt, xlabel, step_no, plot_hourly ):
-    if plt and (plot_hourly or step_no % 12 == 0):
+
+
+def plot_callback(positions, status, params, day, day_fraction, home, work, plt, xlabel, step_no, hourly):
+    if plt and (hourly or step_no % 12 == 0):
         plt.clf()
         plot_points(plt=plt, positions=positions, status=status,
                     title="Day " + str(day) + ':' + str(int(100*day_fraction)/100).zfill(4))
@@ -33,7 +35,10 @@ def plot_points(plt, positions, status, title=None, sizes=None):
         labels = [ desc for desc,_ in running_totals ]
         plt.legend(handles=scatter.legend_elements()[0], labels=labels, loc='upper left')
         if title:
-            plt.title(title)
+            try:
+                plt.set_title(title)
+            except:
+                plt.title(title)
     else:
         scatter = plt.scatter(x=x, y=y)
     return scatter

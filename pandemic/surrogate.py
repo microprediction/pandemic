@@ -1,21 +1,19 @@
 # A community experiment to build a surrogate model
 
 import requests, math, copy, json, random
-from collections import Counter
-from pandemic.conventions import STATES
+from pandemic.metrics import status_counts
 from pandemic.zcurves import to_zcurve, from_zcurve
 from pandemic.example_parameters import BASELINES
-from pandemic.conventions import params_to_vector, vector_to_params, CATEGORIES, STATE_DESCRIPTIONS
+from pandemic.conventions import CATEGORIES, STATE_DESCRIPTIONS
 from pandemic.zcurves import to_zcurve
 from pandemic.simulation import simulate
 from pandemic.plotting import plot_points
 import numpy as np
 from pprint import pprint
-import matplotlib.pyplot as plt
 
-#-------------------------
-#   Free parameters
-#-------------------------
+#------------------------------------------------------
+#   Free parameters and their proposal distributions
+#------------------------------------------------------
 
 FREE_PARAMS = {'motion':{'w'},
                'geometry':{'c'},
@@ -55,15 +53,6 @@ def days_to_int(day, day_fraction):
 def int_to_days(key):
     return int(key) / DAY_SCALE
 
-
-#----------------------------------------
-#   Examples of reporting callbacks
-#----------------------------------------
-
-def health_metric(status, **ignore_other_kwargs):
-    counts = Counter(status)
-    return [ counts[k] for k,_ in enumerate(STATES) ]
-
 def random_modification_ratio():
     return math.exp(np.random.randn())
 
@@ -73,13 +62,13 @@ def random_modification(params):
             params[c][prm] = random_modification_ratio()*params[c][prm]
     return params
 
-#----------------------------------------
+#-------------------------------------------
 #   Client for www.swarmprediction.com
-#----------------------------------------
+#-------------------------------------------
 
 class Surrogate():
 
-    def __init__(self, baseline, url='https://www.swarmprediction.com/metrics', callback_metric=health_metric, plt=None, params=None, quietude=24):
+    def __init__(self, baseline, url='https://www.swarmprediction.com/metrics', callback_metric=status_counts, plt=None, params=None, quietude=24):
         self.baseurl  = url
         self.baseline = baseline
         self.callback_metric = callback_metric
@@ -111,7 +100,7 @@ class Surrogate():
         return elapsed, params
 
     def run(self):
-        simulate(params=self.params,callback=self.callback,plot_hourly=False,plt=self.plt,xlabel="Sending results to www.swarmprediction.com. Thanks!")
+        simulate(params=self.params, callback=self.callback, hourly=False, plt=self.plt)
 
     def callback(self, day, day_fraction, status, positions, home, work, plt, **ignore_other_kwargs):
         """ This gets called after each computation cycle (see pandemic/simulation.py) """
@@ -147,7 +136,7 @@ class Surrogate():
         res  = requests.patch(url=self.baseurl+'/' + str(key), data={'precision':precision,'baseline':self.baseline})
         return res.json() if res.status_code==200 else res.status_code
 
-    def plot(self,plt,positions,status):
+    def plot(self,plt,positions,status):  # TODO: move to plotting.py
 
         # Population plot
         self.axs[0][0].clear()
@@ -165,9 +154,8 @@ class Surrogate():
         self.plot_metrics(plt=self.axs[0][1], logarithmic=False, differences=True)
         self.axs[0][1].figure
 
-
         plt.show(block=False)
-        plt.pause(0.01)
+        plt.pause(0.1)
 
     def plot_metrics(self, plt, logarithmic, differences=False):
         metrics = list(zip(*self.metric_history))[1:]
@@ -209,4 +197,4 @@ def surrogate(baseline='city',plot=True,quietude=5):
         s.run()
 
 if __name__=="__main__":
-    surrogate(baseline='town',quietude=1)
+    surrogate(baseline='town',quietude=3)
