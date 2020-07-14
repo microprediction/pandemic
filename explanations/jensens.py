@@ -4,6 +4,7 @@ import numpy as np
 #---------------------------------------------------------
 #   Illustrates harmonic mean ratio for contagiousness
 #---------------------------------------------------------
+# https://www.linkedin.com/pulse/how-population-shape-tilts-your-odds-getting-covid-19-cotton-phd/
 
 def tent(b):
     fig = plt.figure()

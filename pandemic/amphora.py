@@ -1,4 +1,4 @@
-from pandemic.client import BaseSimulator
+from pandemic.simulator import BaseSimulator
 import os
 from pprint import pprint
 import uuid

@@ -1,4 +1,4 @@
-from pandemic.client import LockdownSimulator
+from pandemic.simulator import LockdownSimulator
 
 if __name__=="__main__":
     simulator = LockdownSimulator(baseline='town')

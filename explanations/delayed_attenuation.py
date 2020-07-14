@@ -56,15 +56,30 @@ def model(Y, t, a, b, g, dt ):
 
 
 def values_before_zero(t):
-    return [0.99, 0.01, 0.0, 1.0]
+    return [0.9999, 0.0001, 0.0, 1.0]
 
-tt = np.linspace(0, 200, 200)
+tt = np.linspace(0, 170, 500)
+
+def moving_average(a, n=3) :
+    ma = list()
+    recent = list()
+    for x in a:
+        recent.append(x)
+        if len(recent)>=n:
+            recent.pop(0)
+        ma.append(np.mean(recent))
+    return ma
+
+
+xs = [1,4,3,1,4,1,1,1,1]
+ys = moving_average(xs,3)
+len(ys)
 
 def aplot(axs, a,logarithmic=False):
     import math
     b = 0.10+math.sqrt(0.02+math.pow(a,0.75))*0.135
-    b = 0.15
-    g = 0.1
+    #b = 0.15
+    g = 0.06
     dt = tt[1]-tt[0]
     derivatives = lambda Y,t : model(Y,t,a,b,g,dt)
     yy = ddeint(derivatives, values_before_zero, tt)
@@ -91,7 +106,7 @@ def aplot(axs, a,logarithmic=False):
     S0 = values_before_zero(0)[0]
     AR = 1-susceptible[-1]     # Attack rate
     Ri = - math.log((1-r)/S0)/(AR-(1-S0))  # https://bmcmedinformdecismak.biomedcentral.com/articles/10.1186/1472-6947-12-147
-    analysis = {'a':a,'S0':S0,'R0':b/g,'AR':r,'Ri':Ri,'Rn':Rn,'w1_growth':w1_growth,'w2_growth':w2_growth,'tau':round(1/a,0),'peak_s':peak_susc,'peak_i':peak_i,'cases':total_cases}
+    analysis = {'a':a,'S0':S0,'R0':b/g,'AR':r,'Ri':Ri,'Rn':Rn,'w1_growth':w1_growth,'w2_growth':w2_growth,'tau':round(1/a,1),'peak_s':peak_susc,'peak_i':peak_i,'cases':total_cases}
 
     # Plot trajectory of infections and R numbers
     axs[0][0].plot(tt,100*infected)
@@ -117,12 +132,69 @@ def aplot(axs, a,logarithmic=False):
     axs[1][0].set_title('Herd Effects (a='+str(round(a,2))+')')
     axs[1][0].set_xlabel('Relative importance of local versus global herd effect')
 
-    axs[0][0].set_xlabel('Days')
-    axs[0][1].set_xlabel('Days')
-    axs[1][0].set_xlabel('Days')
+    # Show acceleration
+    axs[1][1].clear()
+    dt = tt[1]-tt[0]
+    position = [ math.log(i) for i in infected ]
+    velocity = moving_average( np.gradient( position ), 10 )
+    acceleration = moving_average( np.gradient( velocity ), 10 )
+
+    dsus = np.gradient(susceptible)
+
+    if a < 1e-5:
+        force0 = [-b * ds * dt  for i, ds in zip(infected, dsus)]
+    else:
+        force0 = [-b * ds * dt * a for i, ds, a in zip(infected, dsus, attenuation)]
+
+    if a<1e-5:
+        force1 = [ b*b*i*s*dt*dt for i,s in zip(infected,susceptible) ]
+    else:
+        force1 = [ b*b*i*s*dt*dt*a*a for i,s,a in zip(infected,susceptible, attenuation) ]
+
+    a_hill = hill(acceleration)
+
+    if False:
+        axs[1][1].plot(tt,[ -a for a in acceleration])
+        axs[1][1].plot(tt,force0)
+        #axs[1][1].plot(tt, force1)
+        hill_scale  = max(np.abs(acceleration))/max(np.abs(a_hill))
+        a_hill = [ hill_scale*h for h in a_hill ]
+        axs[1][1].plot(tt,a_hill)
+        axs[1][1].legend(['Acceleration','Force','Hill'])
+        axs[1][1].set_xlabel('a='+str(round(a,2))+ ' tau='+str(round(1/a,1)))
+        axs[1][1].set_title('Newton''s Law')
+
+        axs[1][1].figure
+
+    if True:
+        # axs[1][1].plot(tt, force1)
+        a_hill = hill(acceleration)
+        axs[1][1].plot(tt, a_hill)
+        axs[1][1].set_xlabel('a=' + str(round(a, 2)) + ' tau=' + str(round(1 / (0.000001+a), 1)))
+        axs[1][1].set_title('Epidemic Hill (Stylized)')
+        axs[1][1].figure
+
+
     return analysis
 
-aas = np.linspace(0.00,0.20,11)
+
+def hill(acceleration):
+    y      = 0
+    ys     = list()
+    import math
+    for a in acceleration:
+        theta = math.asin(a)
+        dy    = math.tan(theta)
+        y     = y-dy
+        ys.append(y)
+    return ys
+
+
+
+
+
+aas = np.linspace(10.0,10.0,1)
+
 analysis = list()
 legends = list()
 fig, axs = plt.subplots(nrows=2,ncols=2)
@@ -148,11 +220,11 @@ for k,a in enumerate(aas):
     axs[0][0].legend(legend00)
     legend01 = ['tau='+str(a['tau']) for a in analysis ]
     axs[0][1].legend(legend01)
-    plt.show(block=False)
-    plt.pause(0.1)
+    legend01 = ['tau=' + str(a['tau']) for a in analysis]
+    axs[1][1].legend(legend01)
 
     # Plot error in peak infection estimate and total cases
-    if k>0:
+    if k>0 and False:
         axs[1][1].clear()
         axs[1][1].plot( aas, [ cases[0]/c for c in cases], aas, [ peak[0]/p for p in peak]  )
         axs[1][1].legend(['Peak Infection','Total Cases'])
@@ -160,5 +232,11 @@ for k,a in enumerate(aas):
         axs[1][1].set_ylabel('Ratio to Realized')
         axs[1][1].set_xlabel('a')
 
+    plt.show(block=False)
+    plt.pause(0.2)
 
-plt.show()
+
+plt.show(block=True)
+
+
+
