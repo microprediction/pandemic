@@ -53,7 +53,8 @@ def simulate(params, plt=None, hourly=None, xlabel=None, callback=plot_callback,
             status = individual_progression(status, health_params=params['health'], day_fraction=time_step )
 
             if callback:
-                signal = callback(day=day, day_fraction=day_fraction, home=home, work=work, positions=positions, status=status, params=params, step_no=step_no, hourly=hourly, plt=plt, xlabel=xlabel)
+                signal = callback(day=day, day_fraction=day_fraction, home=home, work=work, positions=positions, status=status,
+                                  params=params, step_no=step_no, hourly=hourly, plt=plt, xlabel=xlabel)
                 if signal is not None:
                     if 'kill' in signal:
                         killed = True

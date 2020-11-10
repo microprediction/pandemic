@@ -5,11 +5,12 @@ import math
 import random, copy
 from pandemic.simulation import simulate
 from pandemic.surrogate import status_counts
-from plotting import plot_points
+from pandemic.plotting import plot_points
 
 # ----------------------------------------------------------------------
 #    Study of a disk population and effect of density on growth rates
 # ----------------------------------------------------------------------
+
 
 def circle(r,n=50):
     circle_x = [r*math.cos(theta) for theta in np.linspace(-math.pi, math.pi,num=n)]

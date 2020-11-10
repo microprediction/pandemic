@@ -7,7 +7,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="pandemic",
-    version="0.4.1",
+    version="0.4.2",
     description="Orstein-Uhlenbeck pandemic simulation",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -24,7 +24,7 @@ setup(
     test_suite='pytest',
     tests_require=['pytest','deepdiff'],
     include_package_data=True,
-    install_requires=["numpy","pathlib","matplotlib","contexttimer","requests","python-geohash","deepdiff","pymorton","pytest","redis","scipy","pandas"],
+    install_requires=["numpy","pathlib","matplotlib","contexttimer","requests","wheel","python-geohash","deepdiff","pymorton","pytest","redis","scipy","pandas","matplotlib","ddeint"],
     entry_points={
         "console_scripts": [
             "pandemic=pandemic.__main__:main",

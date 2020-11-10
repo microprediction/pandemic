@@ -5,7 +5,7 @@ import math
 import random, copy
 from pandemic.simulation import simulate
 from pandemic.surrogate import status_counts
-from plotting import plot_points
+from pandemic.plotting import plot_points
 from pandemic.conventions import INFECTED, POSITIVE, RECOVERED, VULNERABLE
 
 # ----------------------------------------------------------------------
