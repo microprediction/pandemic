@@ -7,7 +7,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="pandemic",
-    version="0.4.3",
+    version="0.4.4",
     description="Orstein-Uhlenbeck pandemic simulation",
     long_description=README,
     long_description_content_type="text/markdown",
